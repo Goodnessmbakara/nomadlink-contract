@@ -18,10 +18,10 @@ describe("NomadLink Contracts", function () {
   let user2Address: string;
   let backendAddress: string;
 
-  const MINTER_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("MINTER_ROLE"));
-  const ADMIN_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("ADMIN_ROLE"));
-  const BURNER_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("BURNER_ROLE"));
-  const UPGRADER_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("UPGRADER_ROLE"));
+  const MINTER_ROLE = ethers.id("MINTER_ROLE");
+  const ADMIN_ROLE = ethers.id("ADMIN_ROLE");
+  const BURNER_ROLE = ethers.id("BURNER_ROLE");
+  const UPGRADER_ROLE = ethers.id("UPGRADER_ROLE");
 
   beforeEach(async function () {
     [owner, user1, user2, backend] = await ethers.getSigners();
@@ -35,7 +35,7 @@ describe("NomadLink Contracts", function () {
     nolnToken = await upgrades.deployProxy(NOLN, [
       "NomadLink Token",
       "NOLN",
-      ethers.utils.parseEther("100000000"), // 100M tokens
+      ethers.parseEther("100000000"), // 100M tokens
       ownerAddress
     ]);
     await nolnToken.deployed();
@@ -78,44 +78,44 @@ describe("NomadLink Contracts", function () {
       expect(await nolnToken.name()).to.equal("NomadLink Token");
       expect(await nolnToken.symbol()).to.equal("NOLN");
       expect(await nolnToken.decimals()).to.equal(18);
-      expect(await nolnToken.totalSupply()).to.equal(ethers.utils.parseEther("100000000"));
-      expect(await nolnToken.balanceOf(ownerAddress)).to.equal(ethers.utils.parseEther("100000000"));
+      expect(await nolnToken.totalSupply()).to.equal(ethers.parseEther("100000000"));
+      expect(await nolnToken.balanceOf(ownerAddress)).to.equal(ethers.parseEther("100000000"));
     });
 
     it("Should allow minting by authorized accounts", async function () {
-      const mintAmount = ethers.utils.parseEther("1000");
+      const mintAmount = ethers.parseEther("1000");
       await nolnToken.mint(user1Address, mintAmount);
       expect(await nolnToken.balanceOf(user1Address)).to.equal(mintAmount);
     });
 
     it("Should prevent minting by unauthorized accounts", async function () {
-      const mintAmount = ethers.utils.parseEther("1000");
+      const mintAmount = ethers.parseEther("1000");
       await expect(
         nolnToken.connect(user1).mint(user2Address, mintAmount)
       ).to.be.revertedWith("AccessControl");
     });
 
     it("Should allow burning by authorized accounts", async function () {
-      const burnAmount = ethers.utils.parseEther("1000");
+      const burnAmount = ethers.parseEther("1000");
       await nolnToken.burn(ownerAddress, burnAmount);
       expect(await nolnToken.balanceOf(ownerAddress)).to.equal(
-        ethers.utils.parseEther("99999000")
+        ethers.parseEther("99999000")
       );
     });
 
     it("Should allow users to burn their own tokens", async function () {
-      const mintAmount = ethers.utils.parseEther("1000");
+      const mintAmount = ethers.parseEther("1000");
       await nolnToken.mint(user1Address, mintAmount);
       
-      const burnAmount = ethers.utils.parseEther("500");
+      const burnAmount = ethers.parseEther("500");
       await nolnToken.connect(user1).burn(burnAmount);
       expect(await nolnToken.balanceOf(user1Address)).to.equal(
-        ethers.utils.parseEther("500")
+        ethers.parseEther("500")
       );
     });
 
     it("Should pay cashback correctly", async function () {
-      const cashbackAmount = ethers.utils.parseEther("100");
+      const cashbackAmount = ethers.parseEther("100");
       const bookingId = "BOOK001";
       
       await nolnToken.payCashback(user1Address, cashbackAmount, bookingId);
@@ -125,8 +125,8 @@ describe("NomadLink Contracts", function () {
     it("Should batch mint correctly", async function () {
       const recipients = [user1Address, user2Address];
       const amounts = [
-        ethers.utils.parseEther("1000"),
-        ethers.utils.parseEther("2000")
+        ethers.parseEther("1000"),
+        ethers.parseEther("2000")
       ];
       
       await nolnToken.batchMint(recipients, amounts);
@@ -142,7 +142,7 @@ describe("NomadLink Contracts", function () {
 
       // Burn more than balance
       await expect(
-        nolnToken.burn(user1Address, ethers.utils.parseEther("1000"))
+        nolnToken.burn(user1Address, ethers.parseEther("1000"))
       ).to.be.revertedWithCustomError(nolnToken, "InsufficientBalance");
 
       // Batch mint with mismatched arrays
@@ -467,6 +467,7 @@ describe("NomadLink Contracts", function () {
   describe("SafeBox Staking", function () {
     beforeEach(async function () {
       // Mint some NOLN tokens to users for testing
+      await nolnToken.mint(user1Address, ethers.parseEther("10000"));
       await nolnToken.mint(user1Address, ethers.utils.parseEther("10000"));
       await nolnToken.mint(user2Address, ethers.utils.parseEther("10000"));
     });

@@ -186,12 +186,7 @@ contract NOLN is
     // Access control
     function supportsInterface(
         bytes4 interfaceId
-    )
-        public
-        view
-        override(ERC20Upgradeable, AccessControlUpgradeable)
-        returns (bool)
-    {
+    ) public view override(AccessControlUpgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

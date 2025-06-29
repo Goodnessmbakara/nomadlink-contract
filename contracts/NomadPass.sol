@@ -60,7 +60,7 @@ contract NomadPass is
 
     // Errors
     error BookingIdAlreadyUsed(string bookingId);
-    event InvalidTokenId(uint256 tokenId);
+    error InvalidTokenId(uint256 tokenId);
     error PassExpired(uint256 tokenId, uint256 validUntil);
     error UnauthorizedOperation();
 
@@ -252,7 +252,7 @@ contract NomadPass is
      */
     function getTokensByOwner(
         address owner
-    ) external view returns (uint256[] memory) {
+    ) public view returns (uint256[] memory) {
         uint256 balance = balanceOf(owner);
         uint256[] memory tokens = new uint256[](balance);
 
