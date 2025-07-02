@@ -10,11 +10,11 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
- * @title NomadPass
- * @dev ERC-721 NFT for NomadLink booking passes
+ * @title XcelPass
+ * @dev ERC-721 NFT for XcelTrip booking passes
  * @notice Transferable NFT minted on booking completion, unlocking perks and benefits
  */
-contract NomadPass is
+contract XcelPass is
     Initializable,
     ERC721Upgradeable,
     AccessControlUpgradeable,
@@ -30,7 +30,7 @@ contract NomadPass is
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
     // Metadata structure
-    struct NomadPassMetadata {
+    struct XcelPassMetadata {
         string bookingId;
         string location;
         string perkType;
@@ -40,14 +40,14 @@ contract NomadPass is
     }
 
     // Storage
-    mapping(uint256 => NomadPassMetadata) public tokenMetadata;
+    mapping(uint256 => XcelPassMetadata) public tokenMetadata;
     mapping(string => bool) public usedBookingIds;
 
     uint256 private _tokenIdCounter;
     string private _baseTokenURI;
 
     // Events
-    event NomadPassMinted(
+    event XcelPassMinted(
         address indexed to,
         uint256 indexed tokenId,
         string bookingId,
@@ -91,8 +91,8 @@ contract NomadPass is
     }
 
     /**
-     * @dev Mints a new NomadPass for a completed booking
-     * @param to The address to mint the NomadPass to
+     * @dev Mints a new XcelPass for a completed booking
+     * @param to The address to mint the XcelPass to
      * @param bookingId Unique booking identifier
      * @param location Travel destination
      * @param perkType Type of perk unlocked (e.g., "VIP Access", "Discount")
@@ -117,7 +117,7 @@ contract NomadPass is
 
         usedBookingIds[bookingId] = true;
 
-        tokenMetadata[tokenId] = NomadPassMetadata({
+        tokenMetadata[tokenId] = XcelPassMetadata({
             bookingId: bookingId,
             location: location,
             perkType: perkType,
@@ -126,7 +126,7 @@ contract NomadPass is
             mintedAt: block.timestamp
         });
 
-        emit NomadPassMinted(
+        emit XcelPassMinted(
             to,
             tokenId,
             bookingId,
@@ -137,7 +137,7 @@ contract NomadPass is
     }
 
     /**
-     * @dev Updates the metadata for a NomadPass
+     * @dev Updates the metadata for a XcelPass
      * @param tokenId The token ID to update
      * @param metadataURI New IPFS URI containing updated metadata
      */
@@ -155,7 +155,7 @@ contract NomadPass is
     }
 
     /**
-     * @dev Checks if a NomadPass is still valid
+     * @dev Checks if a XcelPass is still valid
      * @param tokenId The token ID to check
      * @return True if the pass is valid, false otherwise
      */
@@ -167,7 +167,7 @@ contract NomadPass is
     }
 
     /**
-     * @dev Redeems a perk from a valid NomadPass
+     * @dev Redeems a perk from a valid XcelPass
      * @param tokenId The token ID to redeem
      */
     function redeemPerk(uint256 tokenId) external whenNotPaused {
@@ -194,7 +194,7 @@ contract NomadPass is
      */
     function getMetadata(
         uint256 tokenId
-    ) external view returns (NomadPassMetadata memory) {
+    ) external view returns (XcelPassMetadata memory) {
         return tokenMetadata[tokenId];
     }
 
@@ -206,15 +206,15 @@ contract NomadPass is
     function generateMetadataJSON(
         uint256 tokenId
     ) external view returns (string memory) {
-        NomadPassMetadata memory metadata = tokenMetadata[tokenId];
+        XcelPassMetadata memory metadata = tokenMetadata[tokenId];
 
         return
             string(
                 abi.encodePacked(
-                    '{"name":"NomadPass #',
+                    '{"name":"XcelPass #',
                     tokenId.toString(),
                     '",',
-                    '"description":"NomadLink travel pass for ',
+                    '"description":"XcelLink travel pass for ',
                     metadata.location,
                     '",',
                     '"image":"',
@@ -246,7 +246,7 @@ contract NomadPass is
     }
 
     /**
-     * @dev Gets all NomadPasses owned by an address
+     * @dev Gets all XcelPasses owned by an address
      * @param owner The address to query
      * @return Array of token IDs owned by the address
      */
@@ -269,7 +269,7 @@ contract NomadPass is
     }
 
     /**
-     * @dev Gets all valid NomadPasses owned by an address
+     * @dev Gets all valid XcelPasses owned by an address
      * @param owner The address to query
      * @return Array of valid token IDs owned by the address
      */

@@ -9,11 +9,11 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 /**
- * @title NOLN (NomadLink Token)
- * @dev ERC-20 token for NomadLink platform
+ * @title XCELT (XcelTrip Token)
+ * @dev ERC-20 token for XcelTrip platform
  * @notice Used for payments, cashback, staking, and NFT minting
  */
-contract NOLN is
+contract XCELT is
     Initializable,
     ERC20Upgradeable,
     AccessControlUpgradeable,

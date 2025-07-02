@@ -10,11 +10,11 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
- * @title SoulStamp
- * @dev ERC-5114 Soulbound Token for NomadLink user reputation
+ * @title TrailProof SBT
+ * @dev ERC-5114 Soulbound Token for XcelTrip user reputation
  * @notice Non-transferable token tracking user's travel reputation, trips, reviews, and achievements
  */
-contract SoulStamp is
+contract TrailProof is
     Initializable,
     ERC721Upgradeable,
     AccessControlUpgradeable,
@@ -30,7 +30,7 @@ contract SoulStamp is
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
     // Metadata structure
-    struct SoulStampMetadata {
+    struct TrailProofMetadata {
         uint256 tripCount;
         uint256 reviewCount;
         uint256 safetyScore; // 0-100
@@ -42,14 +42,14 @@ contract SoulStamp is
 
     // Storage
     mapping(address => uint256) public walletToTokenId;
-    mapping(uint256 => SoulStampMetadata) public tokenMetadata;
+    mapping(uint256 => TrailProofMetadata) public tokenMetadata;
     mapping(uint256 => address) public tokenIdToWallet;
 
     uint256 private _tokenIdCounter;
     string private _baseTokenURI;
 
     // Events
-    event SoulStampMinted(
+    event TrailProofMinted(
         address indexed to,
         uint256 indexed tokenId,
         string metadataURI
@@ -62,8 +62,8 @@ contract SoulStamp is
     event ReferralRecorded(uint256 indexed tokenId, uint256 newReferralCount);
 
     // Errors
-    error SoulStampAlreadyExists(address wallet);
-    error SoulStampNotFound(address wallet);
+    error TrailProofAlreadyExists(address wallet);
+    error TrailProofNotFound(address wallet);
     error InvalidSafetyScore(uint256 score);
     error TransferNotAllowed();
     error UnauthorizedOperation();
@@ -95,8 +95,8 @@ contract SoulStamp is
     }
 
     /**
-     * @dev Mints a new SoulStamp for a user
-     * @param to The address to mint the SoulStamp to
+     * @dev Mints a new TrailProof for a user
+     * @param to The address to mint the TrailProof to
      * @param metadataURI IPFS URI containing the metadata
      */
     function mint(
@@ -104,7 +104,7 @@ contract SoulStamp is
         string memory metadataURI
     ) external onlyRole(MINTER_ROLE) whenNotPaused nonReentrant {
         if (walletToTokenId[to] != 0) {
-            revert SoulStampAlreadyExists(to);
+            revert TrailProofAlreadyExists(to);
         }
 
         uint256 tokenId = _tokenIdCounter++;
@@ -114,7 +114,7 @@ contract SoulStamp is
         walletToTokenId[to] = tokenId;
         tokenIdToWallet[tokenId] = to;
 
-        tokenMetadata[tokenId] = SoulStampMetadata({
+        TrailProofMetadata memory newMetadata = TrailProofMetadata({
             tripCount: 0,
             reviewCount: 0,
             safetyScore: 50, // Default safety score
@@ -124,11 +124,13 @@ contract SoulStamp is
             lastUpdated: block.timestamp
         });
 
-        emit SoulStampMinted(to, tokenId, metadataURI);
+        tokenMetadata[tokenId] = newMetadata;
+
+        emit TrailProofMinted(to, tokenId, metadataURI);
     }
 
     /**
-     * @dev Updates the metadata for a SoulStamp
+     * @dev Updates the metadata for a TrailProof
      * @param tokenId The token ID to update
      * @param metadataURI New IPFS URI containing updated metadata
      */
@@ -137,7 +139,7 @@ contract SoulStamp is
         string memory metadataURI
     ) external onlyRole(MINTER_ROLE) whenNotPaused {
         if (!_exists(tokenId)) {
-            revert SoulStampNotFound(tokenIdToWallet[tokenId]);
+            revert TrailProofNotFound(tokenIdToWallet[tokenId]);
         }
 
         tokenMetadata[tokenId].metadataURI = metadataURI;
@@ -154,7 +156,7 @@ contract SoulStamp is
         uint256 tokenId
     ) external onlyRole(MINTER_ROLE) whenNotPaused {
         if (!_exists(tokenId)) {
-            revert SoulStampNotFound(tokenIdToWallet[tokenId]);
+            revert TrailProofNotFound(tokenIdToWallet[tokenId]);
         }
 
         tokenMetadata[tokenId].tripCount++;
@@ -171,7 +173,7 @@ contract SoulStamp is
         uint256 tokenId
     ) external onlyRole(MINTER_ROLE) whenNotPaused {
         if (!_exists(tokenId)) {
-            revert SoulStampNotFound(tokenIdToWallet[tokenId]);
+            revert TrailProofNotFound(tokenIdToWallet[tokenId]);
         }
 
         tokenMetadata[tokenId].reviewCount++;
@@ -190,7 +192,7 @@ contract SoulStamp is
         uint256 newScore
     ) external onlyRole(MINTER_ROLE) whenNotPaused {
         if (!_exists(tokenId)) {
-            revert SoulStampNotFound(tokenIdToWallet[tokenId]);
+            revert TrailProofNotFound(tokenIdToWallet[tokenId]);
         }
 
         if (newScore > 100) {
@@ -211,7 +213,7 @@ contract SoulStamp is
         uint256 tokenId
     ) external onlyRole(MINTER_ROLE) whenNotPaused {
         if (!_exists(tokenId)) {
-            revert SoulStampNotFound(tokenIdToWallet[tokenId]);
+            revert TrailProofNotFound(tokenIdToWallet[tokenId]);
         }
 
         tokenMetadata[tokenId].referralCount++;
@@ -230,7 +232,7 @@ contract SoulStamp is
         string memory questId
     ) external onlyRole(MINTER_ROLE) whenNotPaused {
         if (!_exists(tokenId)) {
-            revert SoulStampNotFound(tokenIdToWallet[tokenId]);
+            revert TrailProofNotFound(tokenIdToWallet[tokenId]);
         }
 
         tokenMetadata[tokenId].completedQuests.push(questId);
@@ -240,7 +242,7 @@ contract SoulStamp is
     }
 
     /**
-     * @dev Gets the SoulStamp token ID for a wallet address
+     * @dev Gets the TrailProof token ID for a wallet address
      * @param wallet The wallet address
      * @return The token ID (0 if not found)
      */
@@ -264,7 +266,7 @@ contract SoulStamp is
      */
     function getMetadata(
         uint256 tokenId
-    ) external view returns (SoulStampMetadata memory) {
+    ) external view returns (TrailProofMetadata memory) {
         return tokenMetadata[tokenId];
     }
 
@@ -276,7 +278,7 @@ contract SoulStamp is
     function generateMetadataJSON(
         uint256 tokenId
     ) external view returns (string memory) {
-        SoulStampMetadata memory metadata = tokenMetadata[tokenId];
+        TrailProofMetadata memory metadata = tokenMetadata[tokenId];
 
         string memory questsArray = "[";
         for (uint256 i = 0; i < metadata.completedQuests.length; i++) {
@@ -295,7 +297,7 @@ contract SoulStamp is
         return
             string(
                 abi.encodePacked(
-                    '{"name":"NomadLink SoulStamp #',
+                    '{"name":"XcelTrip TrailProof #',
                     tokenId.toString(),
                     '",',
                     '"description":"Soulbound token representing travel reputation and achievements",',

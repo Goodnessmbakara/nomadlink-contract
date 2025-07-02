@@ -4,101 +4,101 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 async function main() {
-  console.log("🚀 Starting NomadLink contracts deployment...");
+  console.log("🚀 Starting XcelTrip contracts deployment...");
 
   const [deployer] = await ethers.getSigners();
   console.log("📝 Deploying contracts with account:", deployer.address);
 
-  const balance = await deployer.getBalance();
-  console.log("💰 Account balance:", ethers.utils.formatEther(balance), "ETH");
+  const balance = await deployer.provider.getBalance(deployer.address);
+  console.log("💰 Account balance:", ethers.formatEther(balance), "ETH");
 
-  // Deploy NOLN Token first
-  console.log("\n🪙 Deploying NOLN Token...");
-  const NOLN = await ethers.getContractFactory("NOLN");
-  const nolnToken = await upgrades.deployProxy(NOLN, [
-    "NomadLink Token",
-    "NOLN",
-    ethers.utils.parseEther("100000000"), // 100M tokens
+  // Deploy XCELT Token first
+  console.log("\n🪙 Deploying XCELT Token...");
+  const XCELT = await ethers.getContractFactory("XCELT");
+  const xceltToken = await upgrades.deployProxy(XCELT, [
+    "XcelTrip Token",
+    "XCELT",
+    ethers.parseEther("100000000"), // 100M tokens
     deployer.address
   ]);
-  await nolnToken.deployed();
-  console.log("✅ NOLN Token deployed to:", nolnToken.address);
+  await xceltToken.waitForDeployment();
+  console.log("✅ XCELT Token deployed to:", await xceltToken.getAddress());
 
-  // Deploy SoulStamp SBT
-  console.log("\n🏷️ Deploying SoulStamp SBT...");
-  const SoulStamp = await ethers.getContractFactory("SoulStamp");
-  const soulStamp = await upgrades.deployProxy(SoulStamp, [
-    "NomadLink SoulStamp",
-    "SOUL",
+  // Deploy TrailProof SBT
+  console.log("\n🏷️ Deploying TrailProof SBT...");
+  const TrailProof = await ethers.getContractFactory("TrailProof");
+  const trailProof = await upgrades.deployProxy(TrailProof, [
+    "XcelTrip TrailProof",
+    "TRAIL",
     "ipfs://QmYourBaseURI/", // Replace with actual IPFS URI
     deployer.address
   ]);
-  await soulStamp.deployed();
-  console.log("✅ SoulStamp deployed to:", soulStamp.address);
+  await trailProof.waitForDeployment();
+  console.log("✅ TrailProof deployed to:", await trailProof.getAddress());
 
-  // Deploy NomadPass NFT
-  console.log("\n🎫 Deploying NomadPass NFT...");
-  const NomadPass = await ethers.getContractFactory("NomadPass");
-  const nomadPass = await upgrades.deployProxy(NomadPass, [
-    "NomadLink Pass",
+  // Deploy XcelPass NFT
+  console.log("\n🎫 Deploying XcelPass NFT...");
+  const XcelPass = await ethers.getContractFactory("XcelPass");
+  const xcelPass = await upgrades.deployProxy(XcelPass, [
+    "XcelTrip Pass",
     "PASS",
     "ipfs://QmYourBaseURI/", // Replace with actual IPFS URI
     deployer.address
   ]);
-  await nomadPass.deployed();
-  console.log("✅ NomadPass deployed to:", nomadPass.address);
+  await xcelPass.waitForDeployment();
+  console.log("✅ XcelPass deployed to:", await xcelPass.getAddress());
 
   // Deploy SafeBox Staking
   console.log("\n🔒 Deploying SafeBox Staking...");
   const SafeBox = await ethers.getContractFactory("SafeBox");
   const safeBox = await upgrades.deployProxy(SafeBox, [
-    nolnToken.address,
+    await xceltToken.getAddress(),
     800, // 8% annual rate (800 basis points)
     deployer.address
   ]);
-  await safeBox.deployed();
-  console.log("✅ SafeBox deployed to:", safeBox.address);
+  await safeBox.waitForDeployment();
+  console.log("✅ SafeBox deployed to:", await safeBox.getAddress());
 
   // Grant MINTER_ROLE to SafeBox for reward distribution
   console.log("\n🔐 Setting up permissions...");
-  const MINTER_ROLE = await nolnToken.MINTER_ROLE();
-  await nolnToken.grantRole(MINTER_ROLE, safeBox.address);
+  const MINTER_ROLE = await xceltToken.MINTER_ROLE();
+  await xceltToken.grantRole(MINTER_ROLE, await safeBox.getAddress());
   console.log("✅ Granted MINTER_ROLE to SafeBox");
 
   // Verify deployments
   console.log("\n🔍 Verifying deployments...");
   
-  const nolnName = await nolnToken.name();
-  const nolnSymbol = await nolnToken.symbol();
-  const nolnTotalSupply = await nolnToken.totalSupply();
+  const xceltName = await xceltToken.name();
+  const xceltSymbol = await xceltToken.symbol();
+  const xceltTotalSupply = await xceltToken.totalSupply();
   
-  const soulStampName = await soulStamp.name();
-  const soulStampSymbol = await soulStamp.symbol();
+  const trailProofName = await trailProof.name();
+  const trailProofSymbol = await trailProof.symbol();
   
-  const nomadPassName = await nomadPass.name();
-  const nomadPassSymbol = await nomadPass.symbol();
+  const xcelPassName = await xcelPass.name();
+  const xcelPassSymbol = await xcelPass.symbol();
   
-  const safeBoxNolnToken = await safeBox.nolnToken();
+  const safeBoxXceltToken = await safeBox.nolnToken();
   const safeBoxRewardRate = await safeBox.annualRewardRate();
 
   console.log("\n📊 Deployment Summary:");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log(`NOLN Token: ${nolnToken.address}`);
-  console.log(`  Name: ${nolnName}`);
-  console.log(`  Symbol: ${nolnSymbol}`);
-  console.log(`  Total Supply: ${ethers.utils.formatEther(nolnTotalSupply)} NOLN`);
+  console.log(`XCELT Token: ${await xceltToken.getAddress()}`);
+  console.log(`  Name: ${xceltName}`);
+  console.log(`  Symbol: ${xceltSymbol}`);
+  console.log(`  Total Supply: ${ethers.formatEther(xceltTotalSupply)} XCELT`);
   console.log("");
-  console.log(`SoulStamp SBT: ${soulStamp.address}`);
-  console.log(`  Name: ${soulStampName}`);
-  console.log(`  Symbol: ${soulStampSymbol}`);
+  console.log(`TrailProof SBT: ${await trailProof.getAddress()}`);
+  console.log(`  Name: ${trailProofName}`);
+  console.log(`  Symbol: ${trailProofSymbol}`);
   console.log("");
-  console.log(`NomadPass NFT: ${nomadPass.address}`);
-  console.log(`  Name: ${nomadPassName}`);
-  console.log(`  Symbol: ${nomadPassSymbol}`);
+  console.log(`XcelPass NFT: ${await xcelPass.getAddress()}`);
+  console.log(`  Name: ${xcelPassName}`);
+  console.log(`  Symbol: ${xcelPassSymbol}`);
   console.log("");
-  console.log(`SafeBox Staking: ${safeBox.address}`);
-  console.log(`  NOLN Token: ${safeBoxNolnToken}`);
-  console.log(`  Annual Reward Rate: ${safeBoxRewardRate / 100}%`);
+  console.log(`SafeBox Staking: ${await safeBox.getAddress()}`);
+  console.log(`  XCELT Token: ${safeBoxXceltToken}`);
+  console.log(`  Annual Reward Rate: ${Number(safeBoxRewardRate) / 100}%`);
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
   // Save deployment addresses
@@ -106,16 +106,16 @@ async function main() {
     network: "mumbai",
     deployer: deployer.address,
     contracts: {
-      nolnToken: nolnToken.address,
-      soulStamp: soulStamp.address,
-      nomadPass: nomadPass.address,
-      safeBox: safeBox.address
+      xceltToken: await xceltToken.getAddress(),
+      trailProof: await trailProof.getAddress(),
+      xcelPass: await xcelPass.getAddress(),
+      safeBox: await safeBox.getAddress()
     },
     deploymentTime: new Date().toISOString()
   };
 
   console.log("\n💾 Deployment info saved to deployment-info.json");
-  console.log("🎉 NomadLink contracts deployment completed successfully!");
+  console.log("🎉 XcelTrip contracts deployment completed successfully!");
 
   return deploymentInfo;
 }
